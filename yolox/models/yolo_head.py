@@ -161,7 +161,9 @@ class YOLOXHead(nn.Module):
             obj_output = self.obj_preds[k](reg_feat)
 
             if self.training:
-                output = torch.cat([reg_output, obj_output, cls_output], 1)
+                # output = torch.cat([reg_output, obj_output, cls_output], 1)
+                output = torch.cat([reg_output, obj_output], 1)
+                output = torch.cat([output, cls_output], 1)
                 output, grid = self.get_output_and_grid(
                     output, k, stride_this_level, xin[0].type()
                 )
@@ -184,10 +186,15 @@ class YOLOXHead(nn.Module):
                     origin_preds.append(reg_output.clone())
 
             else:
+                # output = torch.cat(
+                #     [reg_output, obj_output.sigmoid(), cls_output.sigmoid()], 1
+                # )
                 output = torch.cat(
-                    [reg_output, obj_output.sigmoid(), cls_output.sigmoid()], 1
+                    [reg_output, obj_output.sigmoid()], 1
                 )
-
+                output = torch.cat(
+                    [output, cls_output.sigmoid()], 1
+                )
             outputs.append(output)
 
         if self.training:
