@@ -47,8 +47,8 @@ class Trainer:
         self.is_distributed = get_world_size() > 1
         self.rank = get_rank()
         self.local_rank = get_local_rank()
-        # self.device = "cuda:{}".format(self.local_rank)
-        self.device = "cpu"
+        self.device = "cuda:{}".format(self.local_rank)
+        # self.device = "cpu"
         self.use_model_ema = exp.ema
         self.save_history_ckpt = exp.save_history_ckpt
 
@@ -103,9 +103,9 @@ class Trainer:
         inps, targets = self.exp.preprocess(inps, targets, self.input_size)
         data_end_time = time.time()
 
-        # with torch.cuda.amp.autocast(enabled=self.amp_training):
-        #     outputs = self.model(inps, targets)
-        outputs = self.model(inps, targets)
+        with torch.cuda.amp.autocast(enabled=self.amp_training):
+            outputs = self.model(inps, targets)
+        # outputs = self.model(inps, targets)
 
         loss = outputs["total_loss"]
 
@@ -134,13 +134,12 @@ class Trainer:
         logger.info("exp value:\n{}".format(self.exp))
 
         # model related init
-        # torch.cuda.set_device(self.local_rank)
+        torch.cuda.set_device(self.local_rank)
         model = self.exp.get_model()
         logger.info(
             "Model Summary: {}".format(get_model_info(model, self.exp.test_size))
         )
         model.to(self.device)
-        # model.to('cpu')
 
         # solver related init
         self.optimizer = self.exp.get_optimizer(self.args.batch_size)
@@ -158,10 +157,10 @@ class Trainer:
         )
         logger.info("init prefetcher, this might take one minute or less...")
         self.prefetcher = DataPrefetcher(self.train_loader)
-        # self.prefetcher = self.train_loader
+
         # max_iter means iters per epoch
-        # self.max_iter = len(self.train_loader)
-        self.max_iter = 20
+        self.max_iter = len(self.train_loader)
+        # self.max_iter = 20
 
         self.lr_scheduler = self.exp.get_lr_scheduler(
             self.exp.basic_lr_per_img * self.args.batch_size, self.max_iter
@@ -223,9 +222,9 @@ class Trainer:
     def after_epoch(self):
         self.save_ckpt(ckpt_name=f"latest_{self.epoch}")
 
-        # if (self.epoch + 1) % self.exp.eval_interval == 0:
-        #     all_reduce_norm(self.model)
-        #     self.evaluate_and_save_model()
+        if (self.epoch + 1) % self.exp.eval_interval == 0:
+            all_reduce_norm(self.model)
+            self.evaluate_and_save_model()
 
     def before_iter(self):
         pass
@@ -358,22 +357,22 @@ class Trainer:
                 evalmodel, self.evaluator, self.is_distributed, return_outputs=True
             )
 
-        # update_best_ckpt = ap50_95 > self.best_ap
-        # self.best_ap = max(self.best_ap, ap50_95)
+        update_best_ckpt = ap50_95 > self.best_ap
+        self.best_ap = max(self.best_ap, ap50_95)
 
-        # if self.rank == 0:
-        #     if self.args.logger == "tensorboard":
-        #         self.tblogger.add_scalar("val/COCOAP50", ap50, self.epoch + 1)
-        #         self.tblogger.add_scalar("val/COCOAP50_95", ap50_95, self.epoch + 1)
-        #     if self.args.logger == "wandb":
-        #         self.wandb_logger.log_metrics({
-        #             "val/COCOAP50": ap50,
-        #             "val/COCOAP50_95": ap50_95,
-        #             "train/epoch": self.epoch + 1,
-        #         })
-        #         self.wandb_logger.log_images(predictions)
-        #     logger.info("\n" + summary)
-        # synchronize()
+        if self.rank == 0:
+            if self.args.logger == "tensorboard":
+                self.tblogger.add_scalar("val/COCOAP50", ap50, self.epoch + 1)
+                self.tblogger.add_scalar("val/COCOAP50_95", ap50_95, self.epoch + 1)
+            if self.args.logger == "wandb":
+                self.wandb_logger.log_metrics({
+                    "val/COCOAP50": ap50,
+                    "val/COCOAP50_95": ap50_95,
+                    "train/epoch": self.epoch + 1,
+                })
+                self.wandb_logger.log_images(predictions)
+            logger.info("\n" + summary)
+        synchronize()
 
         # self.save_ckpt("last_epoch", update_best_ckpt, ap=ap50_95)
         # if self.save_history_ckpt:
