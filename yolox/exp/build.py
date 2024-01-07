@@ -6,6 +6,8 @@ import importlib
 import os
 import sys
 
+# from yolox.exp import Exp, check_exp_value
+
 
 def get_exp_by_file(exp_file):
     try:
@@ -13,7 +15,10 @@ def get_exp_by_file(exp_file):
         current_exp = importlib.import_module(os.path.basename(exp_file).split(".")[0])
         exp = current_exp.Exp()
     except Exception:
-        raise ImportError("{} doesn't contains class named 'Exp'".format(exp_file))
+        from exps.example.yolox_voc.yolox_voc_s import Exp
+        return Exp
+        # return
+        # raise ImportError("{} doesn't contains class named 'Exp'".format(exp_file))
     return exp
 
 
@@ -33,10 +38,14 @@ def get_exp(exp_file=None, exp_name=None):
         exp_file (str): file path of experiment.
         exp_name (str): name of experiment. "yolo-s",
     """
-    assert (
-        exp_file is not None or exp_name is not None
-    ), "plz provide exp file or exp name."
-    if exp_file is not None:
-        return get_exp_by_file(exp_file)
-    else:
-        return get_exp_by_name(exp_name)
+    # exp = Exp()
+    # check_exp_value(exp)
+
+    return None
+    # assert (
+    #     exp_file is not None or exp_name is not None
+    # ), "plz provide exp file or exp name."
+    # if exp_file is not None:
+    #     return get_exp_by_file(exp_file)
+    # else:
+    #     return get_exp_by_name(exp_name)

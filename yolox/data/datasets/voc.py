@@ -101,7 +101,7 @@ class VOCDetection(CacheDataset):
     def __init__(
         self,
         data_dir,
-        image_sets=[("2007", "trainval"), ("2012", "trainval")],
+        image_sets=[("2012", "trainval")],
         img_size=(416, 416),
         preproc=None,
         target_transform=AnnotationTransform(),
@@ -116,7 +116,7 @@ class VOCDetection(CacheDataset):
         self.target_transform = target_transform
         self.name = dataset_name
         self._annopath = os.path.join("%s", "Annotations", "%s.xml")
-        self._imgpath = os.path.join("%s", "JPEGImages", "%s.jpg")
+        self._imgpath = os.path.join("%s", "JPEGImages", "%s.png")
         self._classes = VOC_CLASSES
         self.cats = [
             {"id": idx, "name": val} for idx, val in enumerate(VOC_CLASSES)
@@ -134,16 +134,16 @@ class VOCDetection(CacheDataset):
 
         self.annotations = self._load_coco_annotations()
 
-        path_filename = [
-            (self._imgpath % self.ids[i]).split(self.root + "/")[1]
-            for i in range(self.num_imgs)
-        ]
+        # path_filename = [
+        #     (self._imgpath % self.ids[i]).split(self.root + "/")[1]
+        #     for i in range(self.num_imgs)
+        # ]
         super().__init__(
             input_dimension=img_size,
             num_imgs=self.num_imgs,
             data_dir=self.root,
             cache_dir_name=f"cache_{self.name}",
-            path_filename=path_filename,
+            path_filename=None,
             cache=cache,
             cache_type=cache_type
         )
@@ -278,7 +278,7 @@ class VOCDetection(CacheDataset):
     def _do_python_eval(self, output_dir="output", iou=0.5):
         rootpath = os.path.join(self.root, "VOC" + self._year)
         name = self.image_set[0][1]
-        annopath = os.path.join(rootpath, "Annotations", "{:s}.xml")
+        annopath = os.path.join(rootpath, "Annotations", "{}.xml")
         imagesetfile = os.path.join(rootpath, "ImageSets", "Main", name + ".txt")
         cachedir = os.path.join(
             self.root, "annotations_cache", "VOC" + self._year, name

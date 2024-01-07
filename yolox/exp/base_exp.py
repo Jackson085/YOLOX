@@ -20,7 +20,7 @@ class BaseExp(metaclass=ABCMeta):
         self.seed = None
         self.output_dir = "./YOLOX_outputs"
         self.print_interval = 100
-        self.eval_interval = 10
+        self.eval_interval = 999
         self.dataset = None
 
     @abstractmethod

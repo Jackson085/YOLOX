@@ -210,12 +210,12 @@ class Trainer:
                 self.model.module.head.use_l1 = True
             else:
                 self.model.head.use_l1 = True
-            self.exp.eval_interval = 1
+            self.exp.eval_interval = 999
             if not self.no_aug:
                 self.save_ckpt(ckpt_name="last_mosaic_epoch")
 
     def after_epoch(self):
-        self.save_ckpt(ckpt_name="latest")
+        self.save_ckpt(ckpt_name=f"latest_{self.epoch}")
 
         if (self.epoch + 1) % self.exp.eval_interval == 0:
             all_reduce_norm(self.model)
