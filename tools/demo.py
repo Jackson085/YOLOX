@@ -34,7 +34,7 @@ def make_parser():
 
     # exp file
     parser.add_argument("-f", "--exp_file", default=None, type=str, help="please input your experiment description file")
-    parser.add_argument("-c", "--ckpt", default='C:/Users/TGOEV/source/GitHub/YOLOX/yolox_s.pth', type=str, help="ckpt for eval")
+    parser.add_argument("-c", "--ckpt", default=r'C:\Users\timgo\PycharmProjects\Git\OrginalYoloX\tools\YOLOX_outputs\Test004/latest_49_ckpt.pth', type=str, help="ckpt for eval")
     # parser.add_argument("-c", "--ckpt", default=r'C:\Users\TGOEV\source\GitHub\YOLOX\tools\yolox_s.onnx', type=str, help="ckpt for eval")
     parser.add_argument("--device", default="cpu", type=str, help="device to run our model, can either be cpu or gpu")
     parser.add_argument("--conf", default=0.25, type=float, help="test conf")
